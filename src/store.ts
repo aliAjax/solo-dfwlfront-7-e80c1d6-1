@@ -11,36 +11,7 @@ import {
   type ShiftStatus,
   type ShiftType
 } from "./types";
-import { SEED_RECORDS } from "./seed";
-
-const STORAGE_KEY = "gas-station-shift-handoff-v2";
-const OLD_STORAGE_KEY = "dfwlfront-7-shift";
-
-function loadRecords(): ShiftRecord[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as ShiftRecord[];
-      return Array.isArray(parsed) ? parsed : [];
-    }
-  } catch {
-    // 数据损坏时回退到示例数据
-  }
-  // 首次访问：生成示例数据并立即持久化到本地
-  // 清理旧版本 key
-  localStorage.removeItem(OLD_STORAGE_KEY);
-  const seeds = SEED_RECORDS.map((record, index) => ({
-    ...record,
-    id: `seed-${index + 1}`,
-    createdAt: new Date(Date.now() - index * 86_400_000).toISOString()
-  }));
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(seeds));
-  } catch {
-    /* localStorage 不可用时仅在内存中使用 */
-  }
-  return seeds;
-}
+import { STORAGE_KEY, loadRecords, persistRecords } from "./storage";
 
 function createId(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -83,10 +54,6 @@ export const useShiftStore = defineStore("shift", () => {
     };
   });
 
-  function persist() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records.value));
-  }
-
   function addRecord(draft: ShiftDraft): ShiftRecord {
     const record: ShiftRecord = {
       ...draft,
@@ -95,7 +62,7 @@ export const useShiftStore = defineStore("shift", () => {
       createdAt: new Date().toISOString()
     };
     records.value = [record, ...records.value];
-    persist();
+    persistRecords(records.value);
     ElMessage.success(`已新增 ${record.station} ${record.shift} 交接记录`);
     return record;
   }
@@ -109,7 +76,7 @@ export const useShiftStore = defineStore("shift", () => {
     if (!record) return;
     if (!STATUS_FLOW[record.status].includes(next)) return;
     record.status = next;
-    persist();
+    persistRecords(records.value);
     ElMessage.success(`${record.station}：${record.status}`);
   }
 
@@ -126,7 +93,7 @@ export const useShiftStore = defineStore("shift", () => {
       return;
     }
     records.value = records.value.filter((r) => r.id !== id);
-    persist();
+    persistRecords(records.value);
     ElMessage.success("记录已移除");
   }
 

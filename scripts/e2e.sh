@@ -196,6 +196,10 @@ fi
 export CHROME_BIN
 
 # --------------------------------------------------------------------- 3. 构建
+step "单元测试（vitest，无需浏览器）"
+npm run test || fail "单元测试未通过，请先修复再继续"
+ok "单元测试通过"
+
 step "生产构建 (tsc -b && vite build)"
 npm run build || fail "构建失败，请查看上方 TypeScript/Vite 输出"
 ok "构建通过，产物在 dist/"

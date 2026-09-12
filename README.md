@@ -23,6 +23,26 @@
 
 ## 自动化核对
 
+### 单元测试（无需浏览器，秒级回归）
+
+```bash
+npm test          # vitest run，跑 tests/ 下全部用例
+npm run test:watch
+```
+
+共 37 个用例，覆盖：
+
+- **状态流转**（`tests/status-flow.test.ts`）：三态流转规则、按钮文案配置完整性、
+  班次常量、总收入与金额格式化；
+- **汇总与筛选**（`tests/summary.test.ts`）：记录数/状态分布/销量/收入汇总、空数据、
+  班次×状态组合筛选、关键词匹配站名与备注、重置筛选；
+- **数据持久化**（`tests/persistence.test.ts`）：首次访问播种并写入、已有数据不覆盖、
+  空数组、JSON 损坏回退、非数组返回空列表、清理旧 key、新增/流转/确认与取消移除的存储行为；
+- **转义边界**（`tests/escape.test.ts`）：五个特殊字符、`&` 不被二次转义、
+  `<img onerror>`/`<script>` 注入载荷转义后无节点、属性引号逃逸、null/数字等边界。
+
+### 浏览器端到端核对
+
 `verify.mjs` 使用 Playwright（Chromium）在桌面 1440×900 与手机 390×844 视口下核对
 地图标记/弹窗、图表、新增校验、选点、筛选、状态流转、移除确认、localStorage 持久化与
 无横向溢出，共 38 项断言。
@@ -40,7 +60,8 @@ npm run e2e -- --clean # 先删除 node_modules 和 dist 再跑
 
 脚本无需 root，从干净状态依次完成：npm 依赖（npmmirror 优先、失败回退官方源）→
 下载匹配架构的 Chrome for Testing 到用户缓存目录 → 用 `apt-get download` 解压补齐
-Chrome 缺失的系统库与中文字体 → 生产构建 → 启动 `vite preview` → 运行两套浏览器核对。
+Chrome 缺失的系统库与中文字体 → 单元测试（vitest）→ 生产构建 → 启动 `vite preview`
+→ 运行两套浏览器核对。
 已下载的浏览器和 deb 缓存在 `~/.cache/gas-shift-e2e`，重复执行会复用；每个阶段失败都会
 打印可读原因。可用环境变量：`NPM_REGISTRY`、`CHROME_VERSION`、`PORT`、`TOOLS_DIR`、
 `SKIP_BROWSER_PREP=1` + `CHROME_BIN`（使用本机 Chrome）。

@@ -13,6 +13,7 @@ import {
   type ShiftStatus
 } from "../types";
 import { clearDraftLocation, draftLocation } from "../map-state";
+import { escapeHtml } from "../html";
 
 const BEIJING: [number, number] = [39.9042, 116.4274];
 
@@ -51,19 +52,6 @@ function draftIcon(): L.DivIcon {
 function statusBadge(status: ShiftStatus): string {
   return `<span class="pop-status" style="background:${STATUS_COLORS[status]}">${status}</span>`;
 }
-
-function escapeHtml(text: string): string {
-  // 纯字符串替换，不依赖 DOM；同时覆盖引号，文本节点与属性值均可安全使用
-  return String(text).replace(/[&<>"']/g, (ch) => ESCAPE_MAP[ch]);
-}
-
-const ESCAPE_MAP: Record<string, string> = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&quot;",
-  "'": "&#39;"
-};
 
 function popupHtml(record: ShiftRecord): string {
   const transitions = store.availableTransitions(record.status);
