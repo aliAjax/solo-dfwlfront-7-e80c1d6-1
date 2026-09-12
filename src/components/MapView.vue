@@ -52,40 +52,48 @@ function statusBadge(status: ShiftStatus): string {
   return `<span class="pop-status" style="background:${STATUS_COLORS[status]}">${status}</span>`;
 }
 
+function escapeHtml(text: string): string {
+  // 纯字符串替换，不依赖 DOM；同时覆盖引号，文本节点与属性值均可安全使用
+  return String(text).replace(/[&<>"']/g, (ch) => ESCAPE_MAP[ch]);
+}
+
+const ESCAPE_MAP: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;"
+};
+
 function popupHtml(record: ShiftRecord): string {
   const transitions = store.availableTransitions(record.status);
+  const id = escapeHtml(record.id);
   const buttons = transitions
     .map(
       (next) =>
-        `<button type="button" class="pop-btn" data-action="flow" data-id="${record.id}" data-next="${next}">` +
-        `${STATUS_NEXT_LABEL[record.status][next] ?? `流转到${next}`}</button>`
+        `<button type="button" class="pop-btn" data-action="flow" data-id="${id}" data-next="${escapeHtml(next)}">` +
+        `${escapeHtml(STATUS_NEXT_LABEL[record.status][next] ?? `流转到${next}`)}</button>`
     )
     .join("");
   return `
-    <div class="pop-card" data-id="${record.id}">
+    <div class="pop-card" data-id="${id}">
       <div class="pop-head">
-        <strong>${record.station}</strong>
+        <strong>${escapeHtml(record.station)}</strong>
         ${statusBadge(record.status)}
       </div>
-      <div class="pop-meta">${record.date} · ${record.shift}</div>
+      <div class="pop-meta">${escapeHtml(record.date)} · ${escapeHtml(record.shift)}</div>
       <dl class="pop-grid">
         <div><dt>油品销量</dt><dd>${record.fuelSales.toLocaleString("zh-CN")} L</dd></div>
-        <div><dt>现金收入</dt><dd>${formatMoney(record.cash)}</dd></div>
-        <div><dt>电子支付</dt><dd>${formatMoney(record.digital)}</dd></div>
-        <div><dt>当班总收入</dt><dd>${formatMoney(totalIncome(record))}</dd></div>
+        <div><dt>现金收入</dt><dd>${escapeHtml(formatMoney(record.cash))}</dd></div>
+        <div><dt>电子支付</dt><dd>${escapeHtml(formatMoney(record.digital))}</dd></div>
+        <div><dt>当班总收入</dt><dd>${escapeHtml(formatMoney(totalIncome(record)))}</dd></div>
       </dl>
       <p class="pop-notes">${escapeHtml(record.notes)}</p>
       <div class="pop-actions">
         ${buttons}
-        <button type="button" class="pop-btn pop-btn--danger" data-action="remove" data-id="${record.id}">移除</button>
+        <button type="button" class="pop-btn pop-btn--danger" data-action="remove" data-id="${id}">移除</button>
       </div>
     </div>`;
-}
-
-function escapeHtml(text: string): string {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 /** 增量同步标记：已有的只更新图标/位置/弹窗内容，避免整层重建导致弹窗闪烁关闭 */

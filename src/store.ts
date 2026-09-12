@@ -26,13 +26,20 @@ function loadRecords(): ShiftRecord[] {
   } catch {
     // 数据损坏时回退到示例数据
   }
+  // 首次访问：生成示例数据并立即持久化到本地
   // 清理旧版本 key
   localStorage.removeItem(OLD_STORAGE_KEY);
-  return SEED_RECORDS.map((record, index) => ({
+  const seeds = SEED_RECORDS.map((record, index) => ({
     ...record,
     id: `seed-${index + 1}`,
     createdAt: new Date(Date.now() - index * 86_400_000).toISOString()
   }));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(seeds));
+  } catch {
+    /* localStorage 不可用时仅在内存中使用 */
+  }
+  return seeds;
 }
 
 function createId(): string {
