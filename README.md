@@ -30,3 +30,17 @@
 `verify-xss.mjs` 是注入专项：植入站名/备注含 `<img onerror>`、`<script>`、引号的记录，
 核对地图弹窗、列表、移除确认框均按纯文本显示、载荷不执行，且地图、图表、筛选、状态流转
 与移除不受影响（19 项断言）。
+
+## 一键复现（干净环境）
+
+```bash
+npm run e2e            # 等价于 bash scripts/e2e.sh
+npm run e2e -- --clean # 先删除 node_modules 和 dist 再跑
+```
+
+脚本无需 root，从干净状态依次完成：npm 依赖（npmmirror 优先、失败回退官方源）→
+下载匹配架构的 Chrome for Testing 到用户缓存目录 → 用 `apt-get download` 解压补齐
+Chrome 缺失的系统库与中文字体 → 生产构建 → 启动 `vite preview` → 运行两套浏览器核对。
+已下载的浏览器和 deb 缓存在 `~/.cache/gas-shift-e2e`，重复执行会复用；每个阶段失败都会
+打印可读原因。可用环境变量：`NPM_REGISTRY`、`CHROME_VERSION`、`PORT`、`TOOLS_DIR`、
+`SKIP_BROWSER_PREP=1` + `CHROME_BIN`（使用本机 Chrome）。

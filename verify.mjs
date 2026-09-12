@@ -1,10 +1,11 @@
 /* 浏览器端功能核对：桌面 + 手机视口 */
 import { chromium } from "playwright";
 import fs from "node:fs";
+import path from "node:path";
 
-const CHROME = "/home/node/chrome/chrome-linux-arm64/chrome";
-const BASE = "http://127.0.0.1:4173";
-const SHOT_DIR = "/workspace/screenshots";
+const CHROME = process.env.CHROME_BIN || "/home/node/chrome/chrome-linux-arm64/chrome";
+const BASE = process.env.BASE_URL || "http://127.0.0.1:4173";
+const SHOT_DIR = process.env.SCREENSHOT_DIR || path.resolve("screenshots");
 fs.mkdirSync(SHOT_DIR, { recursive: true });
 
 const results = [];

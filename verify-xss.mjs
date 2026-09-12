@@ -1,8 +1,8 @@
 /* 尖括号/引号注入专项核对：弹窗纯文本 + 地图/图表/筛选/状态流转/移除不受影响 */
 import { chromium } from "playwright";
 
-const CHROME = "/home/node/chrome/chrome-linux-arm64/chrome";
-const BASE = "http://127.0.0.1:4173";
+const CHROME = process.env.CHROME_BIN || "/home/node/chrome/chrome-linux-arm64/chrome";
+const BASE = process.env.BASE_URL || "http://127.0.0.1:4173";
 
 const launchOpts = {
   executablePath: CHROME,
